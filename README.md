@@ -2,81 +2,77 @@
 
 ## 📌 Overview
 
-This project identifies pricing inconsistencies in bus listings by comparing our buses with similar buses and flagging cases where the price deviates significantly.
+This project automates the detection of pricing inconsistencies in FlixBus listings by comparing each FlixBus service with similar buses and flagging cases where pricing deviates significantly.
 
-The goal is to ensure competitive and optimal pricing using data-driven analysis.
+The system is designed as a **fully automated Python pipeline** that:
 
----
-
-## 🧠 Problem Statement
-
-Given a dataset containing attributes like:
-
-* Price
-* Load (seat occupancy)
-* Search ranking
-* Departure time
-* Ratings & reviews
-
-We need to:
-
-1. Identify **similar buses**
-2. Compare prices with those buses
-3. Flag cases where pricing is:
-
-   * Too high
-   * Too low
+* Identifies comparable buses
+* Computes reference pricing
+* Flags overpricing and underpricing
+* Generates a structured Excel report
 
 ---
 
-## ⚙️ Approach
+## ⚙️ How It Works
 
-### 🔹 1. Identifying Similar Buses
+### 🔹 1. Input Data
 
-Buses are considered similar based on:
+* The system takes a **bus dataset (Excel/CSV)** as input.
+* Due to file size constraints, the dataset is **not included in this repository**.
 
-* **Route Number** → Ensures same journey
-* **Departure Time Window** → Buses within a close time range (handles midnight wraparound)
-* **AC / Non-AC Filter** → Ensures fair comparison
+📂 **Dataset & Output Link (Google Drive):**
+👉 *[Paste your Drive link here]*
 
-This ensures we only compare buses that a user would realistically consider as alternatives.
-
----
-
-### 🔹 2. Price Comparison Logic
-
-For each bus:
-
-* Identify comparable buses
-* Compute **average price of similar buses**
-* Calculate **price difference**
-
-#### 🚨 Flagging Conditions:
-
-* 🔴 **Overpriced** → Our price significantly higher than average
-* 🟢 **Underpriced** → Our price significantly lower than average
-
-A threshold is used to avoid minor fluctuations.
+👉 Place the dataset file in the same folder as the script before running.
 
 ---
 
-## 📊 Output
+### 🔹 2. Similar Bus Identification
 
-The system generates an Excel file:
+For each FlixBus service, comparable buses are selected based on:
 
-### Sheet 1 – Flagging Output
+* Same **Route Number**
+* Same **Date of Journey (DOJ)**
+* **AC Sleeper buses only**
+* Departure time within **±2 hours window**
+* Minimum number of reviews (data reliability)
 
-* Our Bus
-* Comparable Buses
-* Average Comparable Price
-* Price Difference
-* Flag Indicator (High / Low / Normal)
+👉 Handles **midnight edge cases** (e.g., 23:00 vs 01:00)
 
-### Sheet 2 – Logic Explanation
+---
 
-* Explanation of similarity logic
-* Explanation of flagging logic
-* Assumptions made
+### 🔹 3. Pricing Logic
+
+* Reference price = **Median of comparable buses**
+* Adjustments applied:
+
+  * Daytime discount (lower pricing expectation)
+  * Seater/Sleeper configuration adjustment
+
+---
+
+### 🔹 4. Flagging Conditions
+
+* 🔴 **TOO HIGH** → Price > +15% above comparable median
+* 🔵 **TOO LOW** → Price < -15% below comparable median
+* 🟢 **OK** → Within acceptable range
+* ⚠️ **SKIP** → Insufficient data
+
+---
+
+### 🔹 5. Output
+
+The system generates:
+
+📊 **Flixbus_Pricing_Flagging_Output.xlsx**
+
+Includes:
+
+* Comparable buses used
+* Price statistics (median, mean, quartiles)
+* Price difference
+* Flag indicator
+* Adjustment details
 
 ---
 
@@ -85,54 +81,50 @@ The system generates an Excel file:
 * Python
 * Pandas
 * NumPy
-* Excel
+* OpenPyXL
+
+---
+
+## ▶️ How to Run
+
+### 1. Install dependencies
+
+```bash
+pip install pandas numpy openpyxl
+```
+
+### 2. Add dataset
+
+* Place input file (CSV/Excel) in project folder
+
+### 3. Run script
+
+```bash
+python flixbus_pricing_automation.py bus_data.csv
+```
+
+### 4. Output generated
+
+* Excel report with flagged pricing cases
 
 ---
 
 ## 🔄 Automation Plan (MVP)
 
-The system can be automated as follows:
+This system can be automated as:
 
-1. **Data Ingestion**
-
-   * Daily dataset input (CSV/Excel)
-
-2. **Processing Layer**
-
-   * Python script to:
-
-     * Identify similar buses
-     * Compute price deviations
-     * Generate flags
-
-3. **Output Generation**
-
-   * Automated Excel report
-
-4. **Optional Enhancements**
-
-   * Dashboard (Power BI / Tableau)
-   * Alerts for pricing issues
-   * Integration with pricing systems
+1. Daily dataset ingestion
+2. Run Python script (batch job / cron)
+3. Generate Excel report
+4. Send alerts / integrate with dashboard
 
 ---
 
-## ⚠️ Assumptions
+## ⚠️ Notes
 
-* Buses with same route and similar departure time are comparable
-* AC and Non-AC buses are not directly compared
-* Small price variations are ignored using a threshold
-
----
-
-## 📂 Project Structure
-
-```
-flixbus-pricing-automation/
-│── flixbus_pricing_automation.py
-│── Flixbus_Pricing_Flagging_Output.xlsx
-│── README.md
-```
+* Dataset is large → shared via Google Drive instead of GitHub
+* Both **input dataset and output file** are included in Drive link
+* Designed for scalability and real-world pricing systems
 
 ---
 
@@ -140,12 +132,12 @@ flixbus-pricing-automation/
 
 AI tools (ChatGPT) were used for:
 
-* Structuring the solution
-* Debugging code
+* Structuring logic
+* Debugging implementation
 * Designing automation workflow
 
 ---
 
 ## ✅ Conclusion
 
-This system provides a scalable approach to detect pricing inefficiencies and can be extended into a real-time pricing intelligence tool.
+This solution provides a scalable and automated approach to detect pricing inefficiencies and can be extended into a real-time pricing intelligence system.
